@@ -14,7 +14,6 @@
 .reset_button {
     background-color: transparent;
     /* 移除底色 */
-
 }
 
 // 遊戲區塊自定義
@@ -49,9 +48,6 @@
     }
 }
 
-
-
-
 .card:hover {
     background-color: $nature-90;
 }
@@ -68,6 +64,7 @@
         >.col2 {
             padding-left: 8px;
             padding-right: 8px;
+            margin-bottom: 24px;
         }
 
         // 四個一排的情況，每排的第四個元素
@@ -81,10 +78,7 @@
         }
 
         // 第一個到最後一排前的
-        >.col2:nth-child(n + 1):nth-child(-n + 4) {
-            margin-bottom: 24px;
-
-        }
+        // >.col2:nth-child(n + 1):nth-child(-n + 4) {}
 
         // 最後一排
         >.col2:nth-last-child(-n+4) {
@@ -99,6 +93,8 @@
         .col2 {
             padding-left: 8px;
             padding-right: 8px;
+            margin-bottom: 24px;
+
         }
 
         // 如果是三個一排的情況，每排的第三個元素
@@ -112,10 +108,7 @@
         }
 
         // 第一個到最後一排前的
-        >.col2:nth-child(n + 1):nth-child(-n + 6) {
-            margin-bottom: 24px;
-
-        }
+        // >.col2:nth-child(n + 1):nth-child(-n + 6) {}
 
         // 最後一排
         >.col2:nth-last-child(-n+2) {
@@ -130,16 +123,19 @@
         .col2 {
             padding-left: 6px; // 左側的 padding
             padding-right: 6px; // 右側的 padding
+            margin-bottom: 24px;
         }
 
         .col2:nth-child(3n) {
             padding-left: 6px; // 左側的 padding
             padding-right: 6px; // 右側的 padding
+            margin-bottom: 24px;
         }
 
         .col2:nth-child(3n+1) {
             padding-left: 6px; // 左側的 padding
             padding-right: 6px; // 右側的 padding
+            margin-bottom: 24px;
         }
 
         // 如果是四個一排的情況，每排的第四個元素
@@ -152,16 +148,11 @@
         }
 
         // 第一個到最後一排前的
-        >.col2:nth-child(n + 1):nth-child(-n + 6) {
-            margin-bottom: 24px;
-
-        }
+        // >.col2:nth-child(n + 1):nth-child(-n + 6) {}
 
         // 最後一排
         >.col2:nth-last-child(-n+2) {
             margin-bottom: 0 !important;
         }
-
-
     }
 }

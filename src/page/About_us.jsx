@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Footer from "../layout/Footer";
 import Header from "../layout/Header";
 import axios from "axios";
+
 const baseApi = import.meta.env.VITE_BASE_URL;
 
 function About_us() {

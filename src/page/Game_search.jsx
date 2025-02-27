@@ -1,18 +1,210 @@
+import { useEffect, useRef, useState } from "react";
 import Footer from "../layout/Footer";
 import Header from "../layout/Header";
+import axios from "axios";
+import CommendedGamesCard from "../layout/CommendedGamesCard";
+
+const baseApi = import.meta.env.VITE_BASE_URL;
+
+const area = [
+    { area_name: "台北市", area_value: "taipei" },
+    { area_name: "基隆市", area_value: "keelung" },
+    { area_name: "新竹市", area_value: "hsinchu" },
+    { area_name: "彰化縣", area_value: "changhua" },
+    { area_name: "嘉義市", area_value: "chiayi" },
+    { area_name: "高雄市", area_value: "kaohsiung" },
+    { area_name: "宜蘭縣", area_value: "yilan" },
+    { area_name: "台東縣", area_value: "taidong" },
+    { area_name: "新北市", area_value: "newtaipei" },
+    { area_name: "桃園市", area_value: "taoyuan" },
+    { area_name: "台中市", area_value: "taichung" },
+    { area_name: "南投縣", area_value: "nantou" },
+    { area_name: "台南市", area_value: "tainan" },
+    { area_name: "屏東縣", area_value: "pingtung" },
+    { area_name: "花蓮縣", area_value: "hualien" },
+    { area_name: "澎湖金門馬祖", area_value: "PenghuKinmenMatsu" },
+];
+
+const formData = {
+    order: 'order_price',
+    game_name: '',
+    area: [],
+    game_people: '',
+    difficulty: [],
+    property: [],
+};
 
 function Game_search() {
+    // 原先的資料
+    const [games, setGames] = useState([]);
+    const [difficultys, setDifficultys] = useState([]);
+    const [propertys, setPropertys] = useState([]);
+    const [maxPeople, setMaxPeople] = useState(0);
+    const [search, setSearch] = useState(formData);
+    // 是否要顯示全部資料
+    const [isAllRecommendDisplay, setIsAllRecommendDisplay] = useState(false);
+    const [isAllRecentlyDisplay, setIsAllRecentlyDisplay] = useState(false);
+    const [isSearch, setIsSearch] = useState(false);
+    // 排序過後的資料
+    const [recommendedGames, setRecommendedGames] = useState([]);
+    const [newedGames, setNewedGames] = useState([]);
+    const [searchGames, setSearchGames] = useState([]);
+
+    // axios拿到全部遊戲資料
+    const getGames = async () => {
+        try {
+            const res = await axios.get(`${baseApi}/gamesData`);
+            setGames(res.data);
+
+            const recommendedGames = [...res.data].sort((a, b) => b.game_score - a.game_score);
+            setRecommendedGames(recommendedGames);
+
+            const newGames = [...res.data].sort((a, b) =>
+                new Date(b.game_start_date) - new Date(a.game_start_date)
+            );
+            setNewedGames(newGames);
+            setMaxPeople(Math.max(...res.data.map(p => p.game_maxNum_Players)));
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // axios拿到全部標籤資料
+    const getPropertys = async () => {
+        try {
+            const res = await axios.get(`${baseApi}/propertys_fixed_Data`);
+            setPropertys(res.data);
+        } catch (error) {
+            console.error(error);
+
+        }
+    }
+
+    // axios拿到全部難度資料
+    const getDifficultys = async () => {
+        try {
+            const res = await axios.get(`${baseApi}/difficultys_fixed_Data`);
+            setDifficultys(res.data);
+        } catch (error) {
+            console.error(error);
+
+        }
+    }
+
+    // 查看更多推薦
+    const handleSeeRecommendMore = () => {
+        if (isAllRecommendDisplay) {
+            setIsAllRecommendDisplay(false);
+        }
+        else {
+            setIsAllRecommendDisplay(true);
+        }
+        window.scrollTo(0, 0); // 滾動到頁面頂部
+    };
+
+    // 查看更多新作
+    const handleSeeRecentlyMore = () => {
+        if (isAllRecentlyDisplay) {
+            setIsAllRecentlyDisplay(false);
+        }
+        else {
+            setIsAllRecentlyDisplay(true);
+        }
+        window.scrollTo(0, 0); // 滾動到頁面頂部
+    };
+
+    const handleReset = () => {
+        setSearch(formData);
+        console.log("Before setIsSearch:", isSearch);
+        setIsSearch(false);
+        console.log("After setIsSearch:", isSearch);
+    };
+
+
+
+    // 監聽表單輸入況狀
+    const handlEInputChange = (e) => {
+        const { value, name } = e.target;
+        if (name == 'area' || name == 'difficulty' || name == "property") {
+            setSearch(prev => ({
+                ...prev,
+                [name]: prev[name].includes(value)
+                    ? prev[name].filter(item => item !== value) // 如果已經選擇，就移除
+                    : [...prev[name], value] // 如果沒選擇，就加入
+            }));
+        }
+        else {
+            setSearch({
+                ...search,
+                [name]: value
+            });
+        }
+    };
+
+    // 處理篩選後的結果呈現
+    const handleSerach = async (e) => {
+        e.preventDefault(); // 可用此方式將預設行為取消掉，讓使用者可以直接按enter就可進入，不限制只透過按鈕點選
+        console.log("Before handleSerach setIsSearch:", isSearch);
+        setIsSearch(true);
+        console.log("After handleSerach setIsSearch:", isSearch);
+        // 篩選資料
+        const filteredGames = games.filter(game => {
+            // 遊戲名稱
+            const matchesGameName = search.game_name === "" ? true : game.game_name.includes(search.game_name);
+
+            // 地區篩選（使用OR條件）
+            const matchesArea = search.area.length === 0 ? true : search.area.some(area => game.game_address.startsWith(area));
+
+            // 遊玩人數篩選
+            const matchesGamePeople = search.game_people === "" ? true :
+                (game.game_minNum_Players <= parseInt(search.game_people, 10) && game.game_maxNum_Players >= parseInt(search.game_people, 10));
+
+            // 難度篩選（使用OR條件）
+            const matchesDifficulty = search.difficulty.length === 0 ? true : search.difficulty.includes(String(game.game_dif_tag));
+
+            // 屬性篩選（使用OR條件）
+            const matchesProperty = search.property.length === 0 ? true :
+                search.property.some(property => String(game.game_main_tag1).includes(property) || String(game.game_main_tag2).includes(property));
+
+            // 綜合判斷，使用AND邏輯
+            return matchesGameName && matchesArea && matchesGamePeople && matchesDifficulty && matchesProperty;
+
+        })
+
+        // 排序資料
+        setSearchGames(
+            filteredGames.sort((a, b) => {
+                if (search.order === 'order_price') {
+                    // 價格排序（由大到小）
+                    return b.game_min_price - a.game_min_price;
+                }
+                else if (search.order === 'order_popularity') {
+                    return b.game_score_num - a.game_score_num;
+                }
+
+                return 0; // 如果沒有匹配的排序條件，返回原順序
+            })
+        )
+    };
+
+    useEffect(() => {
+        getGames();
+        getPropertys();
+        getDifficultys();
+    }, []);
+
     return (
         <>
             <Header />
             <main>
                 <div className="banner">
                     <div className="banner-title d-none">
-                        <h1 className="">密室排行榜</h1>
+                        <h1 className="">找密室</h1>
                     </div>
                     <picture>
-                        <source media="(min-width: 992px)" srcSet="../assets/images/illustration/Banner.png" />
-                        <img src="../assets/images/illustration/Banner-2.svg" alt="banner" className="w-100" />
+                        <source media="(min-width: 992px)" srcSet="src/images/illustration/Banner.png" />
+                        <img src="src/images/illustration/Banner-2.svg" alt="banner" className="w-100" />
                     </picture >
                 </div>
                 <div className="my-md-10 my-sm-0">
@@ -20,7 +212,22 @@ function Game_search() {
                         <div className="row d-flex flex-column flex-md-row g-0">
                             {/* <!-- 表單部分 --> */}
                             <div className="col-md-3 pe-lg-6 pe-md-3 ">
-                                <form action="" className="p-4 bg-white">
+                                <form className="p-4 bg-white" onSubmit={(e) => handleSerach(e)}>
+                                    <div className="order">
+                                        <p className="h5 pb-3  fw-bold">
+                                            排序條件
+                                        </p>
+                                        <div className="mb-6">
+                                            <div className="form-check form-check-inline ">
+                                                <input onChange={handlEInputChange} className="form-check-input" defaultChecked={true} type="radio" name="order" id="order_price" value="order_price" />
+                                                <label className="form-check-label" htmlFor="order_price">價格(由高到低)</label>
+                                            </div>
+                                            <div className="form-check form-check-inline">
+                                                <input onChange={handlEInputChange} className="form-check-input" type="radio" name="order" id="order_popularity" value="order_popularity" />
+                                                <label className="form-check-label" htmlFor="order_popularity">人氣</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="search">
                                         <p className="h5 pb-3  fw-bold">
                                             遊戲名稱
@@ -28,8 +235,8 @@ function Game_search() {
                                         <div className="search-all-group mb-6">
                                             <label htmlFor="" className="pb-1">搜尋</label>
                                             <div className=" input-group search-group border  rounded-1  border-primary-black">
-                                                <input type="text" className="form-control border-0 search-input"
-                                                    placeholder="搜尋關鍵字" aria-label="Search" />
+                                                <input onChange={handlEInputChange} type="text" className="form-control border-0 search-input"
+                                                    placeholder="搜尋關鍵字" aria-label="Search" name="game_name" />
                                                 <span className="input-group-text search-input border-0">
                                                     <a href=""><i className="bi bi-search"></i></a>
                                                 </span>
@@ -40,153 +247,46 @@ function Game_search() {
                                     <div className="d-flex  w-100  ">
                                         <div className="row w-100 row1 flex-md-column">
                                             <div className="col-6 col-md-12 col1 ">
-                                                <div className="area ">
+                                                <div className="area">
                                                     <p className="h5 pb-4  fw-bold">
                                                         遊戲地區
                                                     </p>
                                                     {/* <!-- 手機板下拉式選單 --> */}
                                                     <select
+                                                        onChange={handlEInputChange}
                                                         className="form-select d-md-none mb-md-6 mb-3 border  rounded-1  border-primary-black"
-                                                        aria-label="Default select example">
+                                                        aria-label="Default select example"
+                                                        name="area">
                                                         <option defaultValue>請選擇遊玩地區</option>
-                                                        <option value="taipei">台北市</option>
-                                                        <option value="keelung">基隆市</option>
-                                                        <option value="hsinchu">新竹市</option>
-                                                        <option value="changhua">彰化縣</option>
-                                                        <option value="chiayi">嘉義市</option>
-                                                        <option value="kaohsiung">高雄市</option>
-                                                        <option value="yilan">宜蘭縣</option>
-                                                        <option value="taidong">台東縣</option>
-                                                        <option value="newtaipei">新北市</option>
-                                                        <option value="taoyuan">桃園市</option>
-                                                        <option value="taichung">台中市</option>
-                                                        <option value="nantou">南投縣</option>
-                                                        <option value="tainan">台南市</option>
-                                                        <option value="pingtung">屏東縣</option>
-                                                        <option value="hualien">花蓮縣</option>
-                                                        <option value="PenghuKinmenMatsu">澎湖金門馬祖</option>
+                                                        {area.map((item, index) => (
+                                                            <option key={index} value={item.area_name}>{item.area_name}</option>
+                                                        ))}
                                                     </select>
                                                     {/* <!-- 電腦版checkbox --> */}
                                                     <div className="row m-0 mb-6 d-none d-md-flex">
                                                         <div className="col-md-6 mx-0 p-0 w-auto">
-                                                            <div className="form-check mb-4 me-6">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="taipei" id="taipei" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="taipei">
-                                                                    台北市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="keelung" id="keelung" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="keelung">
-                                                                    基隆市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="hsinchu" id="hsinchu" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="hsinchu">
-                                                                    新竹市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="changhua" id="changhua" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="changhua">
-                                                                    彰化縣
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox" value=""
-                                                                    id="chiayi" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="chiayi">
-                                                                    嘉義市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="kaohsiung" id="kaohsiung" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="kaohsiung">
-                                                                    高雄市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="yilan" id="yilan" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="yilan">
-                                                                    宜蘭縣
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="taidong" id="taidong" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="taidong">
-                                                                    台東縣
-                                                                </label>
-                                                            </div>
+                                                            {area.slice(0, area.length / 2).map((item, index) => (
+                                                                <div key={index} className="form-check mb-4 me-6">
+                                                                    <input onChange={handlEInputChange} className="form-check-input" type="checkbox"
+                                                                        value={item.area_name} id={item.area_value} name="area" />
+                                                                    <label className="form-check-label text-nowrap" htmlFor={item.area_value}>
+                                                                        {item.area_name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                         <div className="col-md-6 m-0 p-0">
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="newtaipei" id="newtaipei" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="newtaipei">
-                                                                    新北市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="taoyuan" id="taoyuan" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="taoyuan">
-                                                                    桃園市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="taichung" id="taichung" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="taichung">
-                                                                    台中市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="nantou" id="nantou" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="nantou">
-                                                                    南投縣
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="tainan" id="tainan" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="tainan">
-                                                                    台南市
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="pingtung" id="pingtung" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="pingtung">
-                                                                    屏東縣
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="hualien" id="hualien" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="hualien">
-                                                                    花蓮縣
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="PenghuKinmenMatsu" id="PenghuKinmenMatsu" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="PenghuKinmenMatsu">
-                                                                    澎湖金門馬祖
-                                                                </label>
-                                                            </div>
+                                                            {area.slice(area.length / 2).map((item, index) => (
+                                                                <div className="form-check mb-4 " key={index}>
+                                                                    <input onChange={handlEInputChange} className="form-check-input" type="checkbox"
+                                                                        value={item.area_name} id={item.area_value} name="area" />
+                                                                    <label className="form-check-label text-nowrap" htmlFor={item.area_value}>
+                                                                        {item.area_name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </div>
-
                                                 </div>
                                             </div>
                                             <div className="col-6 col-md-12 col1 ">
@@ -195,14 +295,15 @@ function Game_search() {
                                                         遊玩人數
                                                     </p>
                                                     <select
+                                                        onChange={handlEInputChange}
                                                         className="form-select mb-md-6 mb-3 border  rounded-1  border-primary-black"
-                                                        aria-label="Default select example">
+                                                        aria-label="Default select example" name="game_people">
                                                         <option defaultValue>請選擇遊玩人數</option>
-                                                        <option value="1">1人</option>
-                                                        <option value="2">2人</option>
-                                                        <option value="3">3人</option>
-                                                        <option value="4">4人</option>
-                                                        <option value="5">5人</option>
+                                                        {Array.from({ length: Number(maxPeople) }).map((_, index) => (
+                                                            <option key={index} value={index + 1}>
+                                                                {index + 1}人
+                                                            </option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                             </div>
@@ -217,47 +318,43 @@ function Game_search() {
                                                         難度
                                                     </p>
                                                     {/* <!-- 手機板下拉式選單 --> */}
-
                                                     <select
+                                                        onChange={handlEInputChange}
                                                         className="form-select d-md-none mb-md-6 mb-3 border  rounded-1  border-primary-black"
-                                                        aria-label="Default select example">
+                                                        aria-label="Default select example" name="difficulty">
                                                         <option defaultValue>請選擇難度</option>
-                                                        <option value="GettingStarted">新手入門</option>
-                                                        <option value="Moderateplayer">中度玩家</option>
-                                                        <option value="Heavypuzzle">重度解謎</option>
+                                                        {difficultys.map((difficulty) => (
+                                                            <option key={difficulty.difficulty_id} value={difficulty.difficulty_id}>{difficulty.difficulty_name}</option>
+                                                        ))}
                                                     </select>
 
 
                                                     {/* <!-- 電腦版核取方塊 --> */}
                                                     <div className="row m-0 mb-6 d-none d-md-flex">
                                                         <div className="col-md-6 mx-0 p-0 w-auto">
-                                                            <div className="form-check mb-4 me-6">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="GettingStarted" id="GettingStarted" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="GettingStarted">
-                                                                    新手入門
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Moderateplayer" id="Moderateplayer" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Moderateplayer">
-                                                                    中度玩家
-                                                                </label>
-                                                            </div>
+                                                            {difficultys.slice(0, Math.round(difficultys.length / 2)).map((difficulty) => (
+                                                                <div className="form-check mb-4 me-6" key={difficulty.difficulty_id}>
+                                                                    <input onChange={handlEInputChange} className="form-check-input" type="checkbox"
+                                                                        value={difficulty.difficulty_id} id={difficulty.difficulty_id} name="difficulty" />
+                                                                    <label className="form-check-label text-nowrap"
+                                                                        htmlFor={difficulty.difficulty_id}>
+                                                                        {difficulty.difficulty_name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
+
                                                         </div>
                                                         <div className="col-md-6 m-0 p-0">
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Heavypuzzle" id="Heavypuzzle" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Heavypuzzle">
-                                                                    重度解謎
-                                                                </label>
-                                                            </div>
-
+                                                            {difficultys.slice(Math.round(difficultys.length / 2)).map((difficulty) => (
+                                                                <div className="form-check mb-4 " key={difficulty.difficulty_id}>
+                                                                    <input onChange={handlEInputChange} className="form-check-input" type="checkbox"
+                                                                        value={difficulty.difficulty_id} id={difficulty.difficulty_id} name="difficulty" />
+                                                                    <label className="form-check-label text-nowrap"
+                                                                        htmlFor={difficulty.difficulty_id}>
+                                                                        {difficulty.difficulty_name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -269,1141 +366,156 @@ function Game_search() {
                                                     </p>
                                                     {/* <!-- 手機板下拉式選單 --> */}
                                                     <select
+                                                        onChange={handlEInputChange}
                                                         className="form-select d-md-none mb-md-6 mb-3 border  rounded-1  border-primary-black"
-                                                        aria-label="Default select example">
+                                                        aria-label="Default select example" name="property">
                                                         <option defaultValue>請選擇主題類別</option>
-                                                        <option value="Detectivereasoning">偵探推理</option>
-                                                        <option value="Theplotisgreat">劇情厲害</option>
-                                                        <option value="interactiveoperation">互動操作</option>
-                                                        <option value="Relaxedandhappy">輕鬆歡樂</option>
-                                                        <option value="Thrilling">緊張刺激</option>
-                                                        <option value="teamWork">團隊合作</option>
-                                                        <option value="Specialgameplay">玩法特殊</option>
-                                                        <option value="Manyagencies">機關重重</option>
-                                                        <option value="Realisticscenes">場景逼真</option>
-                                                        <option value="puzzleLogic">謎題邏輯</option>
-                                                        <option value="horrorthriller">恐怖驚悚</option>
-                                                        <option value="Intrigue">勾心鬥角</option>
-                                                        <option value="Familytravel">親子同遊</option>
-                                                        <option value="rolePlay">角色扮演</option>
+                                                        {propertys.map((property) => (
+                                                            <option key={property.property_id} value={property.property_id}>{property.property_name}</option>
+
+                                                        ))}
                                                     </select>
 
                                                     {/* <!-- 電腦版核取方塊 --> */}
                                                     <div className="row m-0 mb-6 d-none d-md-flex">
                                                         <div className="col-md-6 mx-0 p-0 w-auto">
-                                                            <div className="form-check mb-4 me-6">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Detectivereasoning" id="Detectivereasoning" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Detectivereasoning">
-                                                                    偵探推理
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Theplotisgreat" id="Theplotisgreat" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Theplotisgreat">
-                                                                    劇情厲害
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="interactiveoperation" id="interactiveoperation" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="interactiveoperation">
-                                                                    互動操作
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Relaxedandhappy" id="Relaxedandhappy" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Relaxedandhappy">
-                                                                    輕鬆歡樂
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Thrilling" id="Thrilling" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="Thrilling">
-                                                                    緊張刺激
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="teamWork" id="teamWork" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="teamWork">
-                                                                    團隊合作
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Specialgameplay" id="Specialgameplay" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Specialgameplay">
-                                                                    玩法特殊
-                                                                </label>
-                                                            </div>
+                                                            {propertys.slice(0, propertys.length / 2).map((property) => (
+                                                                <div className="form-check mb-4 me-6" key={property.property_id}>
+                                                                    <input onChange={handlEInputChange} className="form-check-input" type="checkbox"
+                                                                        value={property.property_id} id={property.property_name} name="property" />
+                                                                    <label className="form-check-label text-nowrap"
+                                                                        htmlFor={property.property_name}>
+                                                                        {property.property_name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
+
                                                         </div>
                                                         <div className="col-md-6 m-0 p-0">
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Manyagencies" id="Manyagencies" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Manyagencies">
-                                                                    機關重重
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Realisticscenes" id="Realisticscenes" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Realisticscenes">
-                                                                    場景逼真
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="puzzleLogic" id="puzzleLogic" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="puzzleLogic">
-                                                                    謎題邏輯
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="horrorthriller" id="horrorthriller" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="horrorthriller">
-                                                                    恐怖驚悚
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Intrigue" id="Intrigue" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="Intrigue">
-                                                                    勾心鬥角
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="Familytravel" id="Familytravel" />
-                                                                <label className="form-check-label text-nowrap"
-                                                                    htmlFor="Familytravel">
-                                                                    親子同遊
-                                                                </label>
-                                                            </div>
-                                                            <div className="form-check mb-4 ">
-                                                                <input className="form-check-input" type="checkbox"
-                                                                    value="rolePlay" id="rolePlay" />
-                                                                <label className="form-check-label text-nowrap" htmlFor="rolePlay">
-                                                                    角色扮演
-                                                                </label>
-                                                            </div>
+                                                            {propertys.slice(propertys.length / 2).map((property) => (
+                                                                <div className="form-check mb-4 " key={property.property_id}>
+                                                                    <input onChange={handlEInputChange} className="form-check-input" type="checkbox"
+                                                                        value={property.property_id} id={property.property_name} name="property" />
+                                                                    <label className="form-check-label text-nowrap"
+                                                                        htmlFor={property.property_name}>
+                                                                        {property.property_name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-
                                         </div>
-
                                     </div>
-
-                                    <div className="text-center mb-3">
-                                        <button type="submit"
+                                    <div className="text-center">
+                                        <button
                                             className="btn btn-secondary-60 link-white rounded-2 w-100">搜尋</button>
                                     </div>
-                                    <div className=" ">
-                                        <button type="reset"
-                                            className="btn w-100 reset_button border-0 text-primary-black fw-bold text-sm-center text-end">重置</button>
-                                    </div>
+
                                 </form>
+                                <div className=" px-4">
+                                    <button onClick={handleReset}
+                                        className="btn w-100 reset_button border-0 text-primary-black fw-bold text-sm-center text-end">重置
+                                    </button>
+                                </div>
                             </div>
                             {/* <!-- 遊戲卡片 --> */}
                             <div className="col-md-9 p-0">
-                                <div className="recommend">
-                                    <div className="title-container w-100  d-flex justify-content-center align-items-center">
-                                        <h3 className="text-center mb-12 recommendation-title fw-bold fs-sm-h3 fs-h6">
-                                            本月推薦</h3>
-                                    </div>
-                                    <div className="row m-0">
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/julia-kadel.svg" />
-
-                                                                <img src="../assets/images/julia-kadel-sm.svg" alt="等一個人・盜墓"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0 img-fluid" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    等一個人・盜墓
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    新北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">4,055 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        2-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 600元起
-                                                                    </span>
-                                                                </p>
-                                                                p                                                       </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">機關重重</span>
-                                                    </div>
+                                {isSearch ?
+                                    (
+                                        < div className="search my-5 my-md-10 " >
+                                            <div className="title-container w-100  d-flex justify-content-center align-items-center">
+                                                <h3 className="text-center mb-12 recommendation-title fw-bold fs-sm-h3 fs-h6">
+                                                    依據您的搜尋/排序結果如下
+                                                </h3>
+                                            </div>
+                                            <div className="row m-0">
+                                                <div className="row m-0">
+                                                    {searchGames.map((game) => (<CommendedGamesCard game={game} />))
+                                                    }
                                                 </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/kostiantyn.svg" />
-
-                                                                <img src="../assets/images/kostiantyn-sm.svg" alt="花月宴"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    花月宴
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    新北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating do tted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">1,264 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        4-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 800元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">機關重重</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/sergio-alves.svg" />
-
-                                                                <img src="../assets/images/sergio-alves-sm.svg" alt="利維得酒吧"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    利維得酒吧
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    新北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">1,245 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        4-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 1,280 元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">劇情厲害</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/joanna-kosinska.svg" />
-
-                                                                <img src="../assets/images/joanna-kosinska-sm.svg" alt="秦閣"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    秦閣
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    新北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4.8
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">1,233 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        6-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 650元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">機關重重</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/adrien-olichon-eye.svg" />
-
-                                                                <img src="../assets/images/adrien-olichon-eye-sm.svg"
-                                                                    alt="獨眼傑克 /"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    獨眼傑克
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 7
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">1,049 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        2-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 600元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">新手入門</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">互動操作</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/jerome.svg" />
-
-                                                                <img src="../assets/images/jerome-sm.svg" alt="SHINOBI 忍"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    SHINOBI 忍
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4.6
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">680 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        4-10 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 550元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">機關重重</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/adrien-olichon-knight.svg" />
-
-                                                                <img src="../assets/images/adrien-olichon-knight-sm.svg"
-                                                                    alt="騎士軌途 /"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    騎士軌途
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    太北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">642 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        6-10 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 650元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">謎題邏輯</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/Comment3.svg" />
-
-                                                                <img src="../assets/images/Comment3-sm.svg" alt="美人秘湯"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    美人秘湯
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">622 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        6-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 750元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">新手入門</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">輕鬆歡樂</span>
-                                                    </div>
-                                                </div>
-                                            </a>
+                                            </div>
                                         </div>
 
-
-                                    </div>
-                                </div>
-                                <div className="recently my-5 my-md-10  ">
-                                    <div className="title-container w-100  d-flex justify-content-center align-items-center">
-                                        <h3 className="text-center mb-12 recommendation-title fw-bold fs-sm-h3 fs-h6">
-                                            近期新作</h3>
-                                    </div>
-                                    <div className="row m-0">
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/sergei.svg" />
-
-                                                                <img src="../assets/images/sergei-sm.svg" alt="逃兵"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    逃兵
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    桃園市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. 9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">219 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        2-4 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 700元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
+                                    )
+                                    :
+                                    (
+                                        <>
+                                            {(!isAllRecentlyDisplay) && (
+                                                <div className="recommend " >
+                                                    <div className="title-container w-100 d-flex justify-content-center align-items-center">
+                                                        <h3 className="text-center mb-12 recommendation-title fw-bold fs-sm-h3 fs-h6">
+                                                            本月推薦
+                                                        </h3>
                                                     </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">恐怖驚悚</span>
+                                                    <div className="row m-0" >
+                                                        {isAllRecommendDisplay ? recommendedGames.map((game) => (
+                                                            < CommendedGamesCard game={game} key={game.game_id} />
+                                                        )) :
+                                                            recommendedGames.slice(0, 8).map((game) => (
+                                                                < CommendedGamesCard game={game} key={game.game_id} />
+                                                            ))
+                                                        }
+                                                        <button
+                                                            className={`btn btn-primary ${isAllRecommendDisplay ? 'd-none' : ''}`}
+                                                            onClick={() => handleSeeRecommendMore()}
+                                                        >
+                                                            查看更多推薦
+                                                        </button>
+                                                        <button
+                                                            className={`btn btn-primary ${isAllRecommendDisplay ? '' : 'd-none'}`}
+                                                            onClick={() => handleSeeRecommendMore()}
+                                                        >
+                                                            顯示較少，返回查看新作
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                {/* <!-- 中螢幕 (768px 以上) --> */}
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/ante-samarzija.svg" />
-
-                                                                {/* <!-- 最小螢幕，當視窗寬度小於 576px 時使用 --> */}
-                                                                <img src="../assets/images/ante-samarzija-sm.svg"
-                                                                    alt="玄武石醫院 /"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    玄武石醫院
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    高雄市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. /9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">183 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        2-5人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人550元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
+                                            )
+                                            }
+                                            {!isAllRecommendDisplay && (
+                                                < div className="recently my-5 my-md-10 " >
+                                                    <div className="title-container w-100  d-flex justify-content-center align-items-center">
+                                                        <h3 className="text-center mb-12 recommendation-title fw-bold fs-sm-h3 fs-h6">
+                                                            近期新作
+                                                        </h3>
                                                     </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">劇情厲害</span>
+                                                    <div className="row m-0">
+                                                        <div className="row m-0">
+                                                            {isAllRecentlyDisplay ?
+                                                                newedGames.map((game) => (
+                                                                    < CommendedGamesCard game={game} key={game.game_id} />
+                                                                ))
+                                                                :
+                                                                newedGames.slice(0, 8).map((game) => (
+                                                                    < CommendedGamesCard game={game} key={game.game_id} />
+                                                                ))
+                                                            }
+                                                            <button
+                                                                className={`btn btn-primary  ${isAllRecentlyDisplay ? 'd-none' : ''}`}
+                                                                onClick={() => handleSeeRecentlyMore()}
+                                                            >
+                                                                查看更多新作
+                                                            </button>
+                                                            <button
+                                                                className={`btn btn-primary  ${isAllRecentlyDisplay ? '' : 'd-none'}`}
+                                                                onClick={() => handleSeeRecentlyMore()}
+                                                            >
+                                                                顯示較少，返回查看推薦
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/adrien-olichon.svg" />
-
-                                                                <img src="../assets/images/adrien-olichon-sm.svg"
-                                                                    alt="庫克王國2-復仇的餓火 /"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    庫克王國2-復仇的餓火
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    高雄市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. /9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">160 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        2-6 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 750元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">新手入門</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">機關重重</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/egor-freethinkel.svg" />
-
-                                                                <img src="../assets/images/egor-freethinkel-sm.svg"
-                                                                    alt="MY後台苦路 /"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    MY後台苦路
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台中市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. /4
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">70 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        8-12 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 900元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">團隊合作</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">玩法特殊</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/omer-haktan.svg" />
-
-                                                                <img src="../assets/images/omer-haktan-sm.svg"
-                                                                    alt="康斯特學員：惡獸起源 /"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    康斯特學員：惡獸起源
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. /7
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">36 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        1-4 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 200元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">新手入門</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">角色扮演</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">輕鬆歡樂</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/roonz.svg" />
-
-                                                                <img src="../assets/images/roonz-sm.svg" alt="鬱金香"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    鬱金香
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    桃園市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />5. /0
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">1 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        2-6 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 850元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">新手入門</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">劇情厲害
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/erik-muller.svg" />
-
-                                                                <img src="../assets/images/erik-muller-sm.svg" alt="諜影：重慶迷霧"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    諜影：重慶迷霧
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台北市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. /8
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">253 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        8-8 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 1,350元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">場景逼真</span>
-                                                        <span className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">勾心鬥角
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <div className="col-lg-3 col-md-4 col-sm-6 col2 ">
-                                            <a href="game_content.html">
-                                                <div className="card p-3 rounded-6 ">
-                                                    <div className="row g-0 align-items-start h-100">
-                                                        <div className="col-auto col-sm-12 ">
-                                                            {/* <!-- 手機板圖片在左邊 --> */}
-                                                            <picture className="">
-
-                                                                <source media="(min-width: 576px)"
-                                                                    srcSet="../assets/images/lan-gao.svg" />
-
-                                                                <img src="../assets/images/lan-gao-sm.svg" alt="驅魔"
-                                                                    className="card-photo rounded-3 w-100 mb-3 me-3 me-md-0" />
-                                                            </picture>
-                                                        </div>
-                                                        {/* <!-- 手機板文字內容在右邊 --> */}
-                                                        <div className="col ms-3 ms-md-0">
-                                                            <div className="card-body p-0">
-                                                                <h6
-                                                                    className="card-title mb-1 mb-md-2 text-primary-black fw-bold lh-base">
-                                                                    驅魔
-                                                                </h6>
-                                                                <p className="card-text text-nature-40 mb-3 fw-bold fs-Body-2">
-                                                                    台中市
-                                                                </p>
-                                                                <p className="d-flex align-items-center mb-2">
-                                                                    <span className="rating dotted pe-3 fs-Body-2">
-                                                                        <img src="../assets/images/icon/star.png" alt="star"
-                                                                            className="pe-1" />4. /9
-                                                                    </span>
-                                                                    <span className="ps-2 fs-Body-2">4,055 人評論</span>
-                                                                </p>
-                                                                <p
-                                                                    className="d-flex align-items-start flex-md-row flex-column ">
-                                                                    <span className="dotted pe-md-3 fs-Body-2 pb-2 pb-md-0">
-                                                                        <img src="../assets/images/icon/person.png"
-                                                                            alt="star" className="pe-1 fs-Body-2" />
-                                                                        4-10 人
-                                                                    </span>
-                                                                    <span className="ps-md-2  fs-Body-2">
-                                                                        <img src="../assets/images/icon/price.png"
-                                                                            alt="star" className="pe-1" />
-                                                                        每人 600元起
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {/* <!-- 手機版標籤在底部 --> */}
-                                                    <div className="tags   d-flex flex-wrap fs-Body-2 gap-2 mt-3 ">
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">中度玩家</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3 text-nowrap">恐怖驚悚</span>
-                                                        <span
-                                                            className=" bg-nature-95 px-2 py-1 rounded-3  text-nowrap">場景逼真</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-
-
-                                    </div>
-                                </div>
+                                            )
+                                            }
+                                        </>
+                                    )
+                                }
                             </div>
                         </div>
                     </div>
-                </div>
-
-
-
-
-            </main>
+                </div >
+            </main >
             <Footer />
         </>
     )
