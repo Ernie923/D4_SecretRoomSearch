@@ -1,6 +1,87 @@
 import Header from "../layout/Header";
+import Footer from "../layout/Footer";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useForm } from "react-hook-form";
+import { Form } from "react-router-dom";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 function Game_comment() {
+  // const [comments, setComment] = useState([]);
+  const [gamesData, setGamesData] = useState([]);
+
+  // const getComments = async () => {
+  //   try {
+  //     const res = await axios.get(`${BASE_URL}/commentsData`);
+  //     console.log(res.data);
+  //     setComment(res.data);
+
+  //     if (res.data.length > 0) {
+  //       const gameIdFromComments = res.data[0].game_id;
+  //       const gameRes = await axios.get(
+  //         `${BASE_URL}/gamesData/${gameIdFromComments}`
+  //       );
+  //       console.log(gameRes.data);
+  //       setGamesData(gameRes.data);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  const game_id = 1;
+
+  const getGamesData = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/gamesData/${game_id}`);
+      setGamesData(res.data);
+      console.log(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // useEffect(() => {
+  //   getComments();
+  // }, []);
+
+  useEffect(() => {
+    getGamesData();
+  }, []);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
+
+  const onSubmit = handleSubmit((data) => {
+    console.log(data);
+  });
+
+  // const onSubmit = handleSubmit((data) => {
+  //   const { message, ...user } = data;
+
+  //   const userInfo = {
+  //     data: {
+  //       user,
+  //       message,
+  //     },
+  //   };
+  //   checkout(userInfo);
+  // });
+
+  // const checkout = async () => {
+  //   try {
+  //     await axios.post(`${BASE_URL}/commentsData`);
+  //     reset();
+  //   } catch (error) {
+  //     alert(error);
+  //   }
+  // };
+
   return (
     <>
       <Header></Header>
@@ -8,11 +89,11 @@ function Game_comment() {
         <div className="container-fluid container-lg">
           <div className="rol d-flex justify-content-center">
             <div className="col-xl-10">
-              <div className="pb-10">
+              <Form className="pb-10" onSubmit={handleSubmit(onSubmit)}>
                 <picture>
                   <source
                     media="(min-width: 992px)"
-                    srcset="../assets/images/julia-kadel.png"
+                    src={`${gamesData.game_img}`}
                   />
                   <img
                     src="../assets/images/julia-kadel-sm.png"
@@ -23,7 +104,7 @@ function Game_comment() {
                 <div>
                   <div className="py-10">
                     <h1 className="fs-lg-Display2 fs-h5 fw-bold">
-                      遊戲名稱：等一個人・盜墓
+                      遊戲名稱：{`${gamesData.game_name}`}
                     </h1>
                   </div>
                   <div className="mb-6">
@@ -32,16 +113,46 @@ function Game_comment() {
                       依據您遊玩的經驗，整體而言您會給這個遊戲幾分?
                     </p>
                     <div className="box">
-                      <input type="radio" name="star" id="score5" value="5" />
-                      <label className="star" for="score5"></label>
-                      <input type="radio" name="star" id="score4" value="4" />
-                      <label className="star" for="score4"></label>
-                      <input type="radio" name="star" id="score3" value="3" />
-                      <label className="star" for="score3"></label>
-                      <input type="radio" name="star" id="score2" value="2" />
-                      <label className="star" for="score2"></label>
-                      <input type="radio" name="star" id="score1" value="1" />
-                      <label className="star" for="score1"></label>
+                      <input
+                        type="radio"
+                        name="star"
+                        id="score5"
+                        value="5"
+                        {...register("radio")}
+                      />
+                      <label className="star" htmlFor="score5"></label>
+                      <input
+                        type="radio"
+                        name="star"
+                        id="score4"
+                        value="4"
+                        {...register("radio")}
+                      />
+                      <label className="star" htmlFor="score4"></label>
+                      <input
+                        type="radio"
+                        name="star"
+                        id="score3"
+                        value="3"
+                        {...register("radio")}
+                      />
+                      <label className="star" htmlFor="score3"></label>
+                      <input
+                        type="radio"
+                        name="star"
+                        id="score2"
+                        value="2"
+                        {...register("radio")}
+                      />
+                      <label className="star" htmlFor="score2"></label>
+                      <input
+                        type="radio"
+                        name="star"
+                        id="score1"
+                        value="1"
+                        {...register("radio")}
+                      />
+                      <label className="star" htmlFor="score1"></label>
                     </div>
                   </div>
                   <div>
@@ -57,10 +168,11 @@ function Game_comment() {
                               name="inlineRadioOptions"
                               id="inlineRadio1"
                               value="option1"
+                              {...register("radio")}
                             />
                             <label
                               className="form-check-label"
-                              for="inlineRadio1"
+                              htmlFor="inlineRadio1"
                             >
                               新手入門
                             </label>
@@ -72,10 +184,11 @@ function Game_comment() {
                               name="inlineRadioOptions"
                               id="inlineRadio2"
                               value="option2"
+                              {...register("radio")}
                             />
                             <label
                               className="form-check-label"
-                              for="inlineRadio2"
+                              htmlFor="inlineRadio2"
                             >
                               中度玩家
                             </label>
@@ -87,10 +200,11 @@ function Game_comment() {
                               name="inlineRadioOptions"
                               id="inlineRadio3"
                               value="option3"
+                              {...register("radio")}
                             />
                             <label
                               className="form-check-label"
-                              for="inlineRadio3"
+                              htmlFor="inlineRadio3"
                             >
                               重度解謎
                             </label>
@@ -106,10 +220,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck1"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck1"
+                                htmlFor="autoSizingCheck1"
                               >
                                 偵探推理
                               </label>
@@ -121,10 +236,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck2"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck2"
+                                htmlFor="autoSizingCheck2"
                               >
                                 機關重重
                               </label>
@@ -136,10 +252,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck3"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck3"
+                                htmlFor="autoSizingCheck3"
                               >
                                 劇情厲害
                               </label>
@@ -151,10 +268,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck4"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck4"
+                                htmlFor="autoSizingCheck4"
                               >
                                 場景逼真
                               </label>
@@ -166,10 +284,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck5"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck5"
+                                htmlFor="autoSizingCheck5"
                               >
                                 互動操作
                               </label>
@@ -181,10 +300,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck6"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck6"
+                                htmlFor="autoSizingCheck6"
                               >
                                 謎題邏輯
                               </label>
@@ -196,10 +316,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck7"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck7"
+                                htmlFor="autoSizingCheck7"
                               >
                                 輕鬆歡樂
                               </label>
@@ -211,10 +332,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck8"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck8"
+                                htmlFor="autoSizingCheck8"
                               >
                                 恐怖驚悚
                               </label>
@@ -226,10 +348,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck9"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck9"
+                                htmlFor="autoSizingCheck9"
                               >
                                 緊張刺激
                               </label>
@@ -241,10 +364,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck10"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck10"
+                                htmlFor="autoSizingCheck10"
                               >
                                 勾心鬥角
                               </label>
@@ -256,10 +380,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck11"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck11"
+                                htmlFor="autoSizingCheck11"
                               >
                                 團隊合作
                               </label>
@@ -271,10 +396,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck12"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck12"
+                                htmlFor="autoSizingCheck12"
                               >
                                 親子同遊
                               </label>
@@ -286,10 +412,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck13"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck13"
+                                htmlFor="autoSizingCheck13"
                               >
                                 玩法特殊
                               </label>
@@ -301,10 +428,11 @@ function Game_comment() {
                                 className="form-check-input"
                                 type="checkbox"
                                 id="autoSizingCheck14"
+                                {...register("checkbox")}
                               />
                               <label
                                 className="form-check-label"
-                                for="autoSizingCheck14"
+                                htmlFor="autoSizingCheck14"
                               >
                                 角色扮演
                               </label>
@@ -317,7 +445,20 @@ function Game_comment() {
                           遊玩日期
                         </h3>
                         <div className="col-12">
-                          <input type="date" className="form-control" />
+                          <input
+                            type="date"
+                            className={`form-control ${
+                              errors.date && "is-invalid"
+                            }`}
+                            {...register("date", {
+                              required: "日期欄位必填",
+                              pattern: {
+                                value:
+                                  /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/,
+                                message: "日期格式錯誤",
+                              },
+                            })}
+                          />
                         </div>
                       </div>
                       <div className="row mb-6">
@@ -331,10 +472,11 @@ function Game_comment() {
                             name="inlineRadioOptions"
                             id="inlineRadioSuccess"
                             value="option1"
+                            {...register("radio")}
                           />
                           <label
                             className="form-check-label"
-                            for="inlineRadioSuccess"
+                            htmlFor="inlineRadioSuccess"
                           >
                             過關
                           </label>
@@ -346,10 +488,11 @@ function Game_comment() {
                             name="inlineRadioOptions"
                             id="inlineRadioFail"
                             value="option2"
+                            {...register("radio")}
                           />
                           <label
                             className="form-check-label"
-                            for="inlineRadioFail"
+                            htmlFor="inlineRadioFail"
                           >
                             未通關
                           </label>
@@ -361,12 +504,15 @@ function Game_comment() {
                         </h3>
                         <div className="col-12">
                           <textarea
-                            className="form-control"
+                            className={`form-control ${
+                              errors.message && "is-invalid"
+                            }`}
                             id="experience"
                             rows="5"
+                            {...register("thoughts")}
                           ></textarea>
                           <label
-                            for="experience"
+                            htmlFor="experience"
                             className="form-label"
                           ></label>
                         </div>
@@ -382,11 +528,12 @@ function Game_comment() {
                     </form>
                   </div>
                 </div>
-              </div>
+              </Form>
             </div>
           </div>
         </div>
       </main>
+      <Footer></Footer>
     </>
   );
 }
