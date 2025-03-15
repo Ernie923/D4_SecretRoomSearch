@@ -20,21 +20,6 @@
   max-height: 55vh;
   overflow-y: auto;
   overflow-x: hidden;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 0;
-  }
-
-  &::-webkit-scrollbar-horizontal {
-    display: none;
-  }
-
-  // Firefox
-  scrollbar-width: thin;
-
-  // 隱藏水平捲軸 (IE)
-  -ms-overflow-style: none;
 }
 
 .storeTable {
@@ -55,6 +40,18 @@
 .storeTable th {
   color: $secondary-40;
   background-color: $secondary-99;
+}
+
+.btn {
+  padding: 8px 12px;
+
+  &.btn-search:hover {
+    background-color: $primary-40;
+  }
+
+  &.btn-reset:hover {
+    background-color: $nature-40;
+  }
 }
 
 .edit-btn {

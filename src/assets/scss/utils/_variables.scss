@@ -345,6 +345,8 @@ $nature-90: #e9e1de;
 $nature-95: #f7efec;
 $nature-99: #fffbff;
 
+$tertiary-90: #ffd7f0;
+
 // scss-docs-end theme-color-variables
 
 // scss-docs-start theme-colors-map
@@ -396,6 +398,8 @@ $theme-colors: (
   "nature-90": $nature-90,
   "nature-95": $nature-95,
   "nature-99": $nature-99,
+
+  "tertiary-90": $tertiary-90,
 ) !default;
 
 // scss-docs-end theme-colors-map
