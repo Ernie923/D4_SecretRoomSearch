@@ -6,12 +6,57 @@
     <link rel="icon" type="image/svg+xml" href="/D4_SecretRoomSearch/logo/Logo-Type-sm.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>密室搜搜</title>
-  <script type="module" crossorigin src="/D4_SecretRoomSearch/assets/index-Rz0_lRyO.js"></script>
-  <link rel="stylesheet" crossorigin href="/D4_SecretRoomSearch/assets/index-BqJyep87.css">
+
+    <style>
+        /* 讓 Loading 畫面先顯示 */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid black;
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+  <script type="module" crossorigin src="/D4_SecretRoomSearch/assets/index-CIFPtW2Y.js"></script>
+  <link rel="stylesheet" crossorigin href="/D4_SecretRoomSearch/assets/index-rxu5vwm4.css">
 </head>
 
 <body>
-    <div id="root"></div>
+    <!-- 初始 Loading 畫面 -->
+    <div id="loading-screen">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div id="root"></div>
+
+
+    <script>
+        // 當 React 完全載入後，隱藏 Loading 畫面
+        window.addEventListener("load", function () {
+            document.getElementById("loading-screen").style.display = "none";
+        });
+    </script>
 </body>
 
 </html>
