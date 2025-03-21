@@ -227,8 +227,8 @@ function Index() {
                 </div>
             </div>
 
-            <div className="py-20">
-                <div className="title-container position-relative w-100 d-flex justify-content-center align-items-center">
+            <div className="py-20 bg-nature-95">
+                <div className="title-container position-relative w-100 d-flex justify-content-center align-items-center" style={{zIndex:'1'}}>
                     <h2 className="mb-20 text-center fs-h3 fw-bold recommendation-title">
                         本月推薦
                     </h2>
@@ -259,7 +259,7 @@ function Index() {
                         {product.map((game) => (
                             <SwiperSlide key={game.game_id}>
                                 <a href={`./#/Game_content/${game.game_id}`} style={{ color: 'inherit' }}>
-                                    <div className={`d-flex flex-column rounded-10 p-5 ${`${isHover === game.game_id ? "bg-primary-95" : "bg-primary-99"}`}`} onMouseEnter={() => setIsHover(game.game_id)} onMouseLeave={() => setIsHover(false)}>
+                                    <div className={`d-flex flex-column rounded-10 p-5 ${`${isHover === game.game_id ? "bg-nature-80" : "bg-nature-99"}`}`} onMouseEnter={() => setIsHover(game.game_id)} onMouseLeave={() => setIsHover(false)}>
                                         <img src={game.game_img[0]} alt={game.game_name} className="rounded-7 mb-3 object-fit-cover" style={{ width: '100%', height: '150px' }} />
                                         <h3 className="card-title fw-bold fs-h6">{game.game_name}</h3>
                                         <p className="fs-Body-1 mb-3 text-nature-40">{game.game_address.slice(0, 3)}</p>
@@ -317,8 +317,8 @@ function Index() {
 
             </div>
 
-            <div className="py-20">
-                <div className="title-container position-relative w-100 d-flex justify-content-center align-items-center">
+            <div className="py-20 bg-nature-95">
+                <div className="title-container position-relative w-100 d-flex justify-content-center align-items-center" style={{zIndex:'1'}}>
                     <h2 className="mb-20 text-center fs-h3 fw-bold recommendation-title">
                         近期新作
                     </h2>
@@ -351,7 +351,7 @@ function Index() {
                         {product.map((game) => (
                             <SwiperSlide key={game.game_id}>
                                 <a href={`./#/Game_content/${game.game_id}`} style={{ color: 'inherit' }}>
-                                    <div className={`d-flex flex-column rounded-10 p-5 ${`${isHover === game.game_id ? "bg-primary-95" : "bg-primary-99"}`}`} onMouseEnter={() => setIsHover(game.game_id)} onMouseLeave={() => setIsHover(false)}>
+                                    <div className={`d-flex flex-column rounded-10 p-5 ${`${isHover === game.game_id ? "bg-nature-80" : "bg-nature-99"}`}`} onMouseEnter={() => setIsHover(game.game_id)} onMouseLeave={() => setIsHover(false)}>
                                         <img src={game.game_img[0]} alt={game.game_name} className="rounded-7 mb-3 object-fit-cover" style={{ width: '100%', height: '150px' }} />
                                         <h3 className="card-title fw-bold fs-h6">{game.game_name}</h3>
                                         <p className="fs-Body-1 mb-3 text-nature-40">{game.game_address.slice(0, 3)}</p>
