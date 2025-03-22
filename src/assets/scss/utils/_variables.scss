@@ -312,6 +312,9 @@ $primary-black: #262018;
 $error: #ff5449;
 $pass: #defdd0;
 
+$secondary-10: #001f2a;
+$secondary-20: #003546;
+$secondary-30: #004d64;
 $secondary-40: #006684;
 $secondary-50: #0081a5;
 $secondary-60: #169cc6;
@@ -345,15 +348,16 @@ $nature-90: #e9e1de;
 $nature-95: #f7efec;
 $nature-99: #fffbff;
 
-$tertiary-90: #ffd7f0;
-$tertiary-80: #f3b3df;
-$tertiary-70: #d698c3;
-$tertiary-60: #b97ea8;
-$tertiary-50: #9d658d;
-$tertiary-40: #814d73;
-$tertiary-30: #67365b;
-$tertiary-20: #4d2043;
 $tertiary-10: #34092d;
+$tertiary-20: #4d2043;
+$tertiary-30: #67365b;
+$tertiary-40: #814d73;
+$tertiary-50: #9d658d;
+$tertiary-60: #b97ea8;
+$tertiary-70: #d698c3;
+$tertiary-80: #f3b3df;
+$tertiary-90: #ffd7f0;
+$tertiary-95: #ffecf5;
 
 // scss-docs-end theme-color-variables
 
@@ -374,6 +378,9 @@ $theme-colors: (
   "error": $error,
   "pass": $pass,
 
+  "secondary-10": $secondary-10,
+  "secondary-20": $secondary-20,
+  "secondary-30": $secondary-30,
   "secondary-40": $secondary-40,
   "secondary-50": $secondary-50,
   "secondary-60": $secondary-60,
@@ -407,15 +414,16 @@ $theme-colors: (
   "nature-95": $nature-95,
   "nature-99": $nature-99,
 
-  "tertiary-90": $tertiary-90,
-  "tertiary-80": $tertiary-80,
-  "tertiary-70": $tertiary-70,
-  "tertiary-60": $tertiary-60,
-  "tertiary-50": $tertiary-50,
-  "tertiary-40": $tertiary-40,
-  "tertiary-30": $tertiary-30,
-  "tertiary-20": $tertiary-20,
   "tertiary-10": $tertiary-10,
+  "tertiary-20": $tertiary-20,
+  "tertiary-30": $tertiary-30,
+  "tertiary-40": $tertiary-40,
+  "tertiary-50": $tertiary-50,
+  "tertiary-60": $tertiary-60,
+  "tertiary-70": $tertiary-70,
+  "tertiary-80": $tertiary-80,
+  "tertiary-90": $tertiary-90,
+  "tertiary-95": $tertiary-95,
 ) !default;
 
 // scss-docs-end theme-colors-map
@@ -556,6 +564,14 @@ $spacers: (
   //80px
   21: $spacer * 5.25,
   //84px
+  22: $spacer * 5.5,
+  //88px
+  23: $spacer * 5.75,
+  //92px
+  24: $spacer * 6,
+  //96px
+  25: $spacer * 6.25,
+  //100px
 ) !default;
 // scss-docs-end spacer-variables-maps
 
@@ -566,6 +582,7 @@ $spacers: (
 // scss-docs-start position-map
 $position-values: (
   0: 0,
+  5: 5%,
   10: 10%,
   20: 20%,
   30: 30%,
