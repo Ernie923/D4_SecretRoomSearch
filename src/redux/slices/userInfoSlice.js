@@ -50,7 +50,7 @@ const userInfoSlice = createSlice({
 export const getUserInfoAsyncThunk = createAsyncThunk(
     'userInfo/getUserInfoAsyncThunk',
     // params 中包含 dispatch 等方法
-    async (account, { dispatch, rejectWithValue }) => {
+    async (account, { rejectWithValue }) => {
         try {
             const res = await axios.post(`${baseApi}/login`, account);
             const { accessToken, user } = res.data;

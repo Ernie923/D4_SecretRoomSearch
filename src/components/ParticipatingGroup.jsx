@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { userContext } from "../page/UserProfile";
 import axios from "axios";
 import { IoIosArrowForward } from "react-icons/io";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const baseApi = import.meta.env.VITE_BASE_URL;
 

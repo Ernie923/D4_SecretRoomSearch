@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import CommendedGamesCard from "../layout/CommendedGamesCard";
-import { IoEllipseSharp } from "react-icons/io5";
 const baseApi = import.meta.env.VITE_BASE_URL;
 
 const area = [
@@ -272,7 +271,6 @@ function Game_search() {
                 difficulty: defaultDifficulty ? [String(defaultDifficulty)] : [],
             }));
             setIsIndexSerach(true);
-        } else if (queryIndex === -1) {
         }
     }, [location]);
 
@@ -696,7 +694,7 @@ function Game_search() {
                                         <div className="row m-0">
                                             {isHaveResultGames ? (
                                                 searchGames.map((game) => (
-                                                    <CommendedGamesCard game={game} />
+                                                    <CommendedGamesCard key={game.game_id} game={game} />
                                                 ))
                                             ) : (
                                                 <div className="text-center">

@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import PropTypes from 'prop-types';
+
 function GroupCard({ game, group, user }) {
     return (
         <div className="col-lg-3 col-md-4 col-sm-6 mb-6">
@@ -82,3 +84,23 @@ function GroupCard({ game, group, user }) {
     );
 }
 export default GroupCard;
+
+// 添加 PropTypes 驗證
+GroupCard.propTypes = {
+    game: PropTypes.shape({
+        game_img: PropTypes.string.isRequired,
+        game_name: PropTypes.string.isRequired,
+        game_address: PropTypes.string.isRequired,
+        game_dif_tagname: PropTypes.string.isRequired,
+        game_main_tag1name: PropTypes.string.isRequired,
+        game_main_tag2name: PropTypes.string.isRequired,
+    }).isRequired,
+    group: PropTypes.shape({
+        group_id: PropTypes.string.isRequired,
+        group_active_date: PropTypes.string.isRequired,
+    }).isRequired,
+    user: PropTypes.shape({
+        user_name: PropTypes.string.isRequired,
+        user_sex: PropTypes.string.isRequired,
+    }).isRequired,
+};

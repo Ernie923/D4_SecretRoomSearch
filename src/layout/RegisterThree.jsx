@@ -1,16 +1,15 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { registerInfo } from "../page/Register";
 import { useForm } from "react-hook-form";
 import AddressForm from "./AddressForm";
+import PropTypes from 'prop-types';
+
 
 function RegisterThree({ userFormRef, storeFormRef, onSubmitUserSuccess, onSubmitStoreSuccess }) {
     const { userRegister, handleUserChange, handleStoreChange } = useContext(registerInfo);
     const role = userRegister.user_role;
     const { register: user, handleSubmit: handleSubmitUser, formState: { errors: userErrors } } = useForm();  // 處理user
-    // const { register: store, handleSubmit: handleSubmitStore, formState: { errors: storeErrors }, watch } = useForm();  // 處理store
     const { register: store, handleSubmit: handleSubmitStore, formState: { errors: storeErrors }, setValue, watch } = useForm();
-
-    const [showPassword, setShowPassword] = useState(false);
 
     // 監聽 store_method 的值
     const watchMethod = watch("store_method");
@@ -394,3 +393,11 @@ function RegisterThree({ userFormRef, storeFormRef, onSubmitUserSuccess, onSubmi
 };
 
 export default RegisterThree;
+
+// PropTypes 驗證
+RegisterThree.propTypes = {
+    userFormRef: PropTypes.object.isRequired, // 驗證為物件
+    storeFormRef: PropTypes.object.isRequired, // 驗證為物件
+    onSubmitUserSuccess: PropTypes.func.isRequired, // 驗證為函數
+    onSubmitStoreSuccess: PropTypes.func.isRequired, // 驗證為函數
+};

@@ -21,7 +21,6 @@ const BasicInfo = () => {
     const { register: storeUserData, handleSubmit: handleStoreUserData, formState: { errors: storeUserErrors }, setValue: setStoreUserValue, watch } = useForm();
     const watchMethod = watch("store_method");
 
-
     // modal ref
     const updatePawwordModalRef = useRef(null); //驗證密碼
     const updateInputPawwordModalRef = useRef(null); //修改密碼
@@ -73,7 +72,7 @@ const BasicInfo = () => {
         const updateStore = async (data) => {
             data["store_update_at"] = dayjs().format("YYYY-MM-DD HH:mm:ss");
             try {
-                const res = await axios.patch(`${baseApi}/storesData/${store_id}`, data);
+                await axios.patch(`${baseApi}/storesData/${store_id}`, data);
             } catch (error) {
                 const message = error.response.data;
                 dispatch(pushMessage({
@@ -139,7 +138,7 @@ const BasicInfo = () => {
         const updateStore = async (data) => {
             data["store_update_at"] = dayjs().format("YYYY-MM-DD HH:mm:ss");
             try {
-                const res = await axios.patch(`${baseApi}/storesData/${store_id}`, data);
+                await axios.patch(`${baseApi}/storesData/${store_id}`, data);
                 setStoreFormData(data);
                 setIsStoreFormChanged(false);
             } catch (error) {
@@ -202,7 +201,7 @@ const BasicInfo = () => {
         const user_id = user.user_id;
         data["user_update_at"] = dayjs().format("YYYY-MM-DD HH:mm:ss");
         try {
-            const res = await axios.patch(`${baseApi}/usersData/${user_id}`, data);
+            await axios.patch(`${baseApi}/usersData/${user_id}`, data);
             dispatch(pushMessage({
                 text: '修改密碼成功\n請下次登入使用新密碼',
                 status: 'success'
@@ -216,9 +215,10 @@ const BasicInfo = () => {
                 handleHideupdateInputPawwordtModal();
             }, 1000);  // 0.5 秒後關閉
         } catch (error) {
-            console.log(error);
-            // const message = error.response.data;
-            // setPasswordError(message);
+            dispatch(pushMessage({
+                text: error,
+                status: 'error'
+            }));
         }
 
     };
@@ -473,27 +473,6 @@ const BasicInfo = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/* 營業時間 */}
-                                {/* <div className="row mb-1">
-                                    <label htmlFor="store_open_time" className="col-sm-2 formrequired">營業時間</label>
-                                    <div className="col-sm-10">
-                                        <input
-                                            {...storeData('store_open_time', { required: "營業時間欄位必填" })}
-                                            type="text"
-                                            className={`form-control ${storeErrors.store_open_time && 'is-invalid'}`}
-                                            id="store_open_time"
-                                            name="store_open_time"
-                                            placeholder="請輸入營業時間"
-                                            value={storeFormData.store_open_time}
-                                            onChange={handleInputStore}
-                                        />
-                                        <div className="error-message text-danger mt-1 fs-caption lh-1">
-                                            {storeErrors.store_open_time ? storeErrors.store_open_time.message : "　"}
-                                        </div>
-                                    </div>
-                                </div> */}
-
-
                             </form>
                         </div>
                         {/* 按鈕區 */}
@@ -578,25 +557,6 @@ const BasicInfo = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/* 營業時間 */}
-                                {/* <div className="row mb-1">
-                                    <label htmlFor="store_open_time" className="col-sm-2 formrequired">營業時間</label>
-                                    <div className="col-sm-10">
-                                        <input
-                                            {...storeData('store_open_time', { required: "營業時間欄位必填" })}
-                                            type="text"
-                                            className={`form-control ${storeErrors.store_open_time && 'is-invalid'}`}
-                                            id="store_open_time"
-                                            name="store_open_time"
-                                            placeholder="請輸入營業時間"
-                                            value={storeFormData.store_open_time}
-                                            onChange={handleInputStore}
-                                        />
-                                        <div className="error-message text-danger mt-1 fs-caption lh-1">
-                                            {storeErrors.store_open_time ? storeErrors.store_open_time.message : "　"}
-                                        </div>
-                                    </div>
-                                </div> */}
                                 {/* 聯絡信箱  */}
                                 <div className="row mb-1">
                                     <label htmlFor="store_email" className="col-sm-2 fs-Body-2 fs-sm-Body-1 mb-2 mb-sm-0">聯絡信箱</label>
@@ -671,7 +631,6 @@ const BasicInfo = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
             {/* 驗證密碼MODAL */}
             <div

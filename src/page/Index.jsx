@@ -37,13 +37,6 @@ function Index() {
     const [gameProperty, setGameProperty] = useState([]);
     const [gameDifficulty, setGameDifficulty] = useState([]);
 
-    const [games, setGames] = useState([]);
-    const [maxPeople, setMaxPeople] = useState(0);
-
-    // 是否要顯示全部資料
-    const [isAllRecommendDisplay, setIsAllRecommendDisplay] = useState(false);
-    const [isAllRecentlyDisplay, setIsAllRecentlyDisplay] = useState(false);
-
     // 排序過後的資料
     const [recommendedGames, setRecommendedGames] = useState([]);
     const [newedGames, setNewedGames] = useState([]);
@@ -58,7 +51,6 @@ function Index() {
 
             // 過濾有效的遊戲
             const upGames = res.data.filter((game) => game.game_isStock === true);
-            setGames(upGames);
 
             // 根據分數排序
             const recommendedGames = [...upGames].sort(
@@ -71,8 +63,6 @@ function Index() {
                 (a, b) => new Date(b.game_start_date) - new Date(a.game_start_date)
             );
             setNewedGames(newGames);
-
-            setMaxPeople(Math.max(...upGames.map((p) => p.game_maxNum_Players)));
         } catch (error) {
             console.error("獲取遊戲資料失敗:", error);
             // 統一錯誤處理
@@ -468,17 +458,13 @@ function Index() {
                                     modules={[Navigation, Autoplay]}
                                     className="mySwiper"
                                 >
-                                    {isAllRecommendDisplay
-                                        ? recommendedGames.map((game) => (
+                                    {
+                                        recommendedGames.slice(0, 10).map((game) => (
                                             <SwiperSlide key={game.game_id}>
                                                 <IndexGamesCard game={game} />
                                             </SwiperSlide>
                                         ))
-                                        : recommendedGames.slice(0, 10).map((game) => (
-                                            <SwiperSlide key={game.game_id}>
-                                                <IndexGamesCard game={game} />
-                                            </SwiperSlide>
-                                        ))}
+                                    }
                                 </Swiper>
                             </div>
                         </div>
@@ -510,18 +496,13 @@ function Index() {
                                     modules={[Navigation, Autoplay]}
                                     className="mySwiper"
                                 >
-                                    {!isAllRecommendDisplay &&
-                                        (isAllRecentlyDisplay
-                                            ? newedGames.map((game) => (
-                                                <SwiperSlide key={game.game_id}>
-                                                    <IndexGamesCard game={game} key={game.game_id} />
-                                                </SwiperSlide>
-                                            ))
-                                            : newedGames.slice(0, 10).map((game) => (
-                                                <SwiperSlide key={game.game_id}>
-                                                    <IndexGamesCard game={game} key={game.game_id} />
-                                                </SwiperSlide>
-                                            )))}
+                                    {
+                                        newedGames.slice(0, 10).map((game) => (
+                                            <SwiperSlide key={game.game_id}>
+                                                <IndexGamesCard game={game} key={game.game_id} />
+                                            </SwiperSlide>
+                                        ))
+                                    }
                                 </Swiper>
                             </div>
                         </div>

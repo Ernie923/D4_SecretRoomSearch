@@ -13,7 +13,6 @@ const MyComments = () => {
     const user_id = user.user_id;
 
     // 此元件使用 
-    const [allComments, setAllComments] = useState([]);
     const [allCommentsGames, setAllCommentsGames] = useState([]);
     const [delOneCommentID, setDelOneCommentID] = useState([]);
     const [isHaveComment, setIsHaveComment] = useState(true);
@@ -28,7 +27,6 @@ const MyComments = () => {
         let new2Comments = [];
         try {
             const res = await axios.get(`${baseApi}/usersData/${user_id}/commentsData`);
-            setAllComments(res.data);
             // 使用 for...of 來處理每一個 comment
             if (typeof res.data[0] === 'string') {
                 setIsHaveComment(false);

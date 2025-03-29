@@ -8,17 +8,17 @@ const baseApi = import.meta.env.VITE_BASE_URL;
 
 const MyGames = () => {
     // 共用的資料 - useContext
-    const { user, store } = useContext(userStoreContext);
+    const { store } = useContext(userStoreContext);
     const store_id = store.store_id;
 
     // 此元件使用 
-    const [allGames, setAllGames] = useState([]);
     const [upGames, setUpGames] = useState([]);
     const [dowmGames, setDownGames] = useState([]);
     const [isHaveUpgames, setIsHaveUpGames] = useState(true);
     const [isDownUpgames, setIsDownUpGames] = useState(true);
     const [isAuthStore, setIsAuthStore] = useState(false);
     const [activeTab, setActiveTab] = useState("upGames");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const getAllGames = async () => {
         if (store.store_isAuth !== 'pass') {
@@ -31,7 +31,6 @@ const MyGames = () => {
         let downG = [];
         try {
             const res = await axios.get(`${baseApi}/storesData/${store_id}/gamesData`);
-            setAllGames(res.data);
             res.data.map((data) => {
                 if (data.game_isStock) {
                     upG.push(data);
@@ -41,7 +40,7 @@ const MyGames = () => {
                 }
             })
         } catch (error) {
-
+            setErrorMessage(error);
         }
         if (upG.length === 0) {
             setIsHaveUpGames(false);
@@ -84,6 +83,17 @@ const MyGames = () => {
                                 </tr>
                             </thead>
                             <tbody>
+                                {
+                                    errorMessage && (
+                                        <tr>
+                                            <td colSpan={6} className="text-center fs-h6">
+                                                <p>
+                                                    {errorMessage}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    )
+                                }
                                 {
                                     isAuthStore === false && (
                                         <tr>

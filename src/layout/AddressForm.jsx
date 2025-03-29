@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import PropTypes from 'prop-types';
 
 const baseApi = import.meta.env.VITE_BASE_URL;
 
@@ -106,3 +107,9 @@ function AddressForm({ onChange, initialAddress = "" }) {
 }
 
 export default AddressForm;
+
+// PropTypes 驗證
+AddressForm.propTypes = {
+    onChange: PropTypes.func.isRequired, // 表示必填，且必須為函數
+    initialAddress: PropTypes.string.isRequired, // 表示必填，且必須為字串
+};

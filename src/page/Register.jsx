@@ -115,6 +115,7 @@ function Register() {
             finalUser["user_id"] = maxUserId;
             finalUser["user_create_at"] = dayjs().format("YYYY-MM-DD HH:mm:ss");
             const { confirmPassword, ...finalUserData } = finalUser;
+            void confirmPassword; // 忽略此變數
             try {
                 const res = await axios.post(`https://new-json.onrender.com/register`, finalUserData);
                 user_role = res.data.user.user_role;
@@ -147,6 +148,7 @@ function Register() {
         if (user_role === '店家') {
             finalStore["user_id"] = user_id;
             const { confirmPassword, ...finalStoreData } = finalStore;
+            void confirmPassword; // 忽略此變數
             try {
                 await axios.post(`https://new-json.onrender.com/storesData`, finalStoreData);
                 const message = '註冊成功，歡迎成為密室搜搜的合作夥伴！\n盡情提供獨特的密室，吸引更多玩家，增加您的收益吧！\n\n請重新登入，頁面自動跳轉中，請稍後';

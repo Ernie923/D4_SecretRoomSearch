@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PropTypes from 'prop-types';
 
 function CommendedGamesCard({ game }) {
     return (
@@ -87,3 +88,21 @@ function CommendedGamesCard({ game }) {
 }
 
 export default CommendedGamesCard;
+
+// 添加 PropTypes 驗證
+CommendedGamesCard.propTypes = {
+    game: PropTypes.shape({
+        game_id: PropTypes.string.isRequired,
+        game_img: PropTypes.string.isRequired,
+        game_name: PropTypes.string.isRequired,
+        game_address: PropTypes.string.isRequired,
+        game_score: PropTypes.number.isRequired,
+        game_score_num: PropTypes.number.isRequired,
+        game_minNum_Players: PropTypes.number.isRequired,
+        game_maxNum_Players: PropTypes.number.isRequired,
+        game_min_price: PropTypes.number.isRequired,
+        game_dif_tagname: PropTypes.string.isRequired,
+        game_main_tag1name: PropTypes.string.isRequired,
+        game_main_tag2name: PropTypes.string.isRequired,
+    }).isRequired,
+};

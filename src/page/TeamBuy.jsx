@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useReducer } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import GroupCard from "../layout/GroupCard";
 import SearchForm from "../components/TeamBuy/SearchForm";
 import SearchResults from "../components/TeamBuy/SearchResults";
 import RecommendedGroups from "../components/TeamBuy/RecommendedGroups";
@@ -43,7 +42,6 @@ function TeamBuy() {
     const [search, dispatch] = useReducer(searchReducer, initialState);
 
     // 原先的資料
-    const [games, setGames] = useState([]);
     const [difficultys, setDifficultys] = useState([]);
     const [propertys, setPropertys] = useState([]);
     const [maxPeople, setMaxPeople] = useState(0);
@@ -51,13 +49,10 @@ function TeamBuy() {
 
     // 是否要顯示全部資料
     const [isAllRecommendDisplay, setIsAllRecommendDisplay] = useState(false);
-    const [isAllRecentlyDisplay, setIsAllRecentlyDisplay] = useState(false);
     const [isSearch, setIsSearch] = useState(false);
     const [isHaveResultGames, setIsHaveResultGames] = useState(false);
 
     // 排序過後的資料
-    const [recommendedGames, setRecommendedGames] = useState([]);
-    const [newedGames, setNewedGames] = useState([]);
     const [searchGames, setSearchGames] = useState([]);
 
     // 載入和錯誤狀態
@@ -71,17 +66,6 @@ function TeamBuy() {
     const getGames = async () => {
         try {
             const res = await axios.get(`${BASE_URL}/gamesData`);
-            setGames(res.data);
-
-            const recommendedGames = [...res.data].sort(
-                (a, b) => b.game_score - a.game_score
-            );
-            setRecommendedGames(recommendedGames);
-
-            const newGames = [...res.data].sort(
-                (a, b) => new Date(b.game_start_date) - new Date(a.game_start_date)
-            );
-            setNewedGames(newGames);
             setMaxPeople(Math.max(...res.data.map((p) => p.game_maxNum_Players)));
         } catch (error) {
             console.error(error);
@@ -113,6 +97,7 @@ function TeamBuy() {
 
     // 查看更多推薦
     const handleSeeRecommendMore = useCallback(() => {
+
         setIsAllRecommendDisplay((prev) => !prev);
         window.scrollTo(0, 0); // 滾動到頁面頂部
     }, []);
@@ -388,13 +373,13 @@ function TeamBuy() {
                                     />
                                 ) : (
                                     <>
-                                        {!isAllRecentlyDisplay && (
+                                        {
                                             <RecommendedGroups
                                                 group={group}
                                                 isAllRecommendDisplay={isAllRecommendDisplay}
                                                 handleSeeRecommendMore={handleSeeRecommendMore}
                                             />
-                                        )}
+                                        }
                                     </>
                                 )}
                             </div>

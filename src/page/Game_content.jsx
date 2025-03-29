@@ -14,7 +14,6 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // 定義公共路徑常量
 const ICON_PATH = "./icon/";
-const COMMENT_PATH = "./comment/";
 
 function Game_content() {
     const { gameID } = useParams();
