@@ -1,62 +1,84 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/D4_SecretRoomSearch/logo/Logo-Type-sm.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>密室搜搜</title>
+  <!-- 基本頁面設定 -->
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- SEO 與內容描述 -->
+  <meta name="description" content="想玩密室卻不知道從哪開始？密室搜搜提供主題分類、難度排序、店家資訊、玩家評論，幫你找出最適合的密室遊戲！" />
+  <meta name="keywords" content="密室逃脫,密室搜搜,密室逃脫推薦,密室逃脫遊戲,台北密室逃脫,台中密室逃脫" />
+  <meta name="author" content="Toung,Hua,Leo,Han" />
+  <meta name="robots" content="index, follow" />
+  <!-- 社群媒體分享設定 - Open Graph -->
+  <meta property="og:title" content="密室搜搜｜密室逃脫玩家的專屬搜尋平台" />
+  <meta property="og:description" content="收錄全台密室逃脫資訊、店家、評價、主題與難度分類，是密室迷必備的遊戲指南網站。" />
+  <meta property="og:image" content="https://ernie923.github.io/D4_SecretRoomSearch/illustration/Banner_web_up_1.png" />
+  <meta property="og:url" content="https://ernie923.github.io/D4_SecretRoomSearch/" />
+  <meta property="og:type" content="website" />
+  <!-- 社群媒體分享設定 - Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="密室搜搜 | 密室逃脫搜尋就靠它" />
+  <meta name="twitter:description" content="結合密室資訊、遊戲主題、玩家評價與揪團機能，是密室愛好者不能錯過的工具平台！" />
+  <meta name="twitter:image"
+    content="https://ernie923.github.io/D4_SecretRoomSearch/illustration/Banner_web_up_1.png" />
+  <!-- 額外設定 -->
+  <meta name="theme-color" content="#169CC6" />
+  <link rel="icon" type="image/svg+xml" href="/D4_SecretRoomSearch/logo/Logo-Type-sm.svg" />
+  <title>密室搜搜</title>
 
-    <style>
-        /* 讓 Loading 畫面先顯示 */
-        #loading-screen {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
+  <style>
+    /* 讓 Loading 畫面先顯示 */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.3);
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
 
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid black;
-            border-top: 5px solid transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
-  <script type="module" crossorigin src="/D4_SecretRoomSearch/assets/index-Cbs3hUHG.js"></script>
-  <link rel="stylesheet" crossorigin href="/D4_SecretRoomSearch/assets/index-DWsSJs93.css">
+    svg path {
+      animation: rotate 0.8s linear infinite;
+    }
+  </style>
+  <script type="module" crossorigin src="/D4_SecretRoomSearch/assets/index-9neEwUlQ.js"></script>
+  <link rel="stylesheet" crossorigin href="/D4_SecretRoomSearch/assets/index-BJ7Q_YlR.css">
 </head>
 
 <body>
-    <!-- 初始 Loading 畫面 -->
-    <div id="loading-screen">
-        <div class="loading-spinner"></div>
-    </div>
+  <!-- 初始 Loading 畫面 -->
+  <!-- Loading 畫面 -->
+  <div id="loading-screen">
+    <p>
+      初始載入中...
+      <br />
+    </p>
+    <!-- ReactLoading type="spin" 對應的 SVG https://www.npmjs.com/package/react-loading?activeTab=code -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="4rem" height="4rem">
+      <path opacity=".25" fill="#ddd"
+        d="M16 0 A16 16 0 0 0 16 32 A16 16 0 0 0 16 0 M16 4 A12 12 0 0 1 16 28 A12 12 0 0 1 16 4" />
+      <path fill="black" d="M16 0 A16 16 0 0 1 32 16 L28 16 A12 12 0 0 0 16 4z">
+        <animateTransform attributeName="transform" type="rotate" values="0 16 16;360 16 16" dur="0.8s"
+          repeatCount="indefinite" />
+      </path>
+    </svg>
 
-    <div id="root"></div>
+
+  </div>
+
+  <div id="root"></div>
 
 
-    <script>
-        // 當 React 完全載入後，隱藏 Loading 畫面
-        window.addEventListener("load", function () {
-            document.getElementById("loading-screen").style.display = "none";
-        });
-    </script>
+  <script>
+    // 當 React 完全載入後，隱藏 Loading 畫面
+    window.addEventListener("load", function () {
+      document.getElementById("loading-screen").style.display = "none";
+    });
+  </script>
 </body>
 
 </html>
