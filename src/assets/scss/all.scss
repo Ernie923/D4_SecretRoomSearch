@@ -1,31 +1,109 @@
-//google font
+// ✅ Google Font，常用字體載入
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap");
-// material symbols
+
+// ✅ Material Symbols 圖示
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
 
-//bootstrap
+// ===== Bootstrap 核心設定（順序不可更動） =====
+// ✅ 必要：Bootstrap 變數與函式依賴
 @import "/node_modules/bootstrap/scss/functions";
+// ✅ 自定義變數，需放在 functions 後
 @import "./utils/variables";
-@import "/node_modules/bootstrap/scss/bootstrap.scss";
+// ✅ 必要：原生及自定義變數中都有用到 map
+@import "/node_modules/bootstrap/scss/maps";
+// ✅ 必要：Bootstrap 大量使用 mixins
+@import "/node_modules/bootstrap/scss/mixins";
+// ✅ 若有自定義 utilities，也需要引入原始 utilities
+@import "/node_modules/bootstrap/scss/utilities";
 
-//universal style
+// ===== Bootstrap 組件（Layout & Components） =====
+// ✅ 定義全域 CSS 變數與 root 層級設定
+@import "/node_modules/bootstrap/scss/root";
+// ❓ Reset 樣式，除非有自定義 reset
+@import "/node_modules/bootstrap/scss/reboot";
+// ❓ 字體排版樣式
+@import "/node_modules/bootstrap/scss/type";
+// ❓ 圖片排版處理
+@import "/node_modules/bootstrap/scss/images";
+// ❓ 響應式容器
+@import "/node_modules/bootstrap/scss/containers";
+// ❓ 響應式網格系統
+@import "/node_modules/bootstrap/scss/grid";
+// ❓ 表格樣式
+@import "/node_modules/bootstrap/scss/tables";
+// ❓ 表單樣式
+@import "/node_modules/bootstrap/scss/forms";
+// ❓ 按鈕樣式
+@import "/node_modules/bootstrap/scss/buttons";
+// ❓ 過渡動畫（modal, toast 等會用到）
+@import "/node_modules/bootstrap/scss/transitions";
+// ❓ dropdown 功能
+@import "/node_modules/bootstrap/scss/dropdown";
+// ❓ .btn-group 群組按鈕
+@import "/node_modules/bootstrap/scss/button-group";
+// ❓ 導覽項目（.nav、.nav-link）
+@import "/node_modules/bootstrap/scss/nav";
+// ❓ 導覽列（navbar）
+@import "/node_modules/bootstrap/scss/navbar";
+// ❓ 卡片元件
+@import "/node_modules/bootstrap/scss/card";
+// ❓ 手風琴元件
+@import "/node_modules/bootstrap/scss/accordion";
+// ❓ 麵包屑導航（未使用可略）
+// @import "/node_modules/bootstrap/scss/breadcrumb";
+// ❓ 分頁按鈕（未使用可略）
+// @import "/node_modules/bootstrap/scss/pagination";
+// ❓ 標籤徽章（未使用可略）
+// @import "/node_modules/bootstrap/scss/badge";
+// ❓ 提示訊息（.alert）
+@import "/node_modules/bootstrap/scss/alert";
+// ❓ 進度條（已自定義可略）
+// @import "/node_modules/bootstrap/scss/progress";
+// ❓ 清單群組
+@import "/node_modules/bootstrap/scss/list-group";
+// ❓ 關閉按鈕（modal、alert）
+@import "/node_modules/bootstrap/scss/close";
+// ❓ Toast 簡易通知
+@import "/node_modules/bootstrap/scss/toasts";
+// ❓ Modal 彈窗
+@import "/node_modules/bootstrap/scss/modal";
+// ❓ Tooltip 提示
+@import "/node_modules/bootstrap/scss/tooltip";
+// ❓ Popover 覆蓋層提示
+@import "/node_modules/bootstrap/scss/popover";
+// ❓ 輪播（已用 Swiper 取代）
+// @import "/node_modules/bootstrap/scss/carousel";
+// ❓ 載入指示器（已用 React Loading 取代）
+// @import "/node_modules/bootstrap/scss/spinners";
+// ❓ 側邊滑出面板（未使用可略）
+// @import "/node_modules/bootstrap/scss/offcanvas";
+// ❓ 預留樣式（loading UI）
+@import "/node_modules/bootstrap/scss/placeholders";
+
+// ===== Bootstrap Helper 工具 =====
+// ✅ 常用輔助類別 .text-*、.shadow-* 等
+@import "/node_modules/bootstrap/scss/helpers";
+
+// ===== 全域自定義樣式 =====
 @import "./base/base";
 
-//bootstrap api
+// ===== 自定義 Utilities 與 API 生成 =====
+// ✅ 自定義的 utilities
 @import "./utils/utilities";
-@import "bootstrap/scss/utilities/api";
+// ✅ Bootstrap utilities API 原始生成邏輯
+@import "/node_modules/bootstrap/scss/utilities/api";
 
-//header, footer style
+// ===== 頁首/頁尾 Layout 區塊 =====
 @import "./layout/header.scss";
 @import "./layout/footer.scss";
 
-// components style
+// ===== 共用 Components =====
 @import "./layout/sidebar.scss";
 @import "./layout/ProgressBar";
 @import "./layout/registerStepBasicInfo";
 @import "./layout/login";
 
-//custom pages style
+// ===== 各頁樣式 =====
 @import "./pages/index.scss";
 @import "./pages/game_content.scss";
 @import "./pages/search";

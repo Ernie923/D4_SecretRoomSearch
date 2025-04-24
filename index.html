@@ -41,7 +41,19 @@
       flex-direction: column;
     }
 
-    svg path {
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner-path {
+      transform-origin: 16px 16px;
+      /* SVG 中心點 */
       animation: rotate 0.8s linear infinite;
     }
   </style>
@@ -56,13 +68,13 @@
       <br />
     </p>
     <!-- ReactLoading type="spin" 對應的 SVG https://www.npmjs.com/package/react-loading?activeTab=code -->
+    <!-- 修改為CSS Animation -->
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="4rem" height="4rem">
+      <!-- 灰色圓圈（背景） -->
       <path opacity=".25" fill="#ddd"
         d="M16 0 A16 16 0 0 0 16 32 A16 16 0 0 0 16 0 M16 4 A12 12 0 0 1 16 28 A12 12 0 0 1 16 4" />
-      <path fill="black" d="M16 0 A16 16 0 0 1 32 16 L28 16 A12 12 0 0 0 16 4z">
-        <animateTransform attributeName="transform" type="rotate" values="0 16 16;360 16 16" dur="0.8s"
-          repeatCount="indefinite" />
-      </path>
+      <!-- 黑色旋轉弧形 -->
+      <path class="spinner-path" fill="black" d="M16 0 A16 16 0 0 1 32 16 L28 16 A12 12 0 0 0 16 4z" />
     </svg>
 
 

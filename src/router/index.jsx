@@ -3,6 +3,8 @@ import { createHashRouter } from "react-router-dom";
 // 設定讓每個頁面進入時再載入，而非剛開始就全部載入
 import { lazy, Suspense } from "react";
 import LoadingSpinner from "../components/UI/LoadingSpinner";
+import Base from "../page/Base";
+import Index from "../page/Index";
 
 const lazyLoad = (importFunc, message = "頁面載入中") => {
   const Component = lazy(importFunc);
@@ -14,14 +16,15 @@ const lazyLoad = (importFunc, message = "頁面載入中") => {
 };
 
 
+
 const Router = createHashRouter([
   {
     path: "/",
-    element: lazyLoad(() => import("../page/Base"), ""),
+    element: <Base />,
     children: [
       {
         path: "/",
-        element: lazyLoad(() => import("../page/Index"), "搜尋頁面載入中")
+        element: <Index />
       },
       {
         path: "/Register",
